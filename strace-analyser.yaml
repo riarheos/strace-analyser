@@ -1,0 +1,43 @@
+logging:
+  version: 1
+  loggers:
+      'app':
+          level: DEBUG
+          handlers:
+              - console
+  handlers:
+      console:
+          class: logging.StreamHandler
+          level: DEBUG
+          formatter: std
+          stream: ext://sys.stdout
+  formatters:
+      std:
+          format: "%(asctime)s %(name)10s %(levelname)8s  %(message)s"
+
+syscalls:
+  ignore:
+    - access
+    - arch_prctl
+    - brk
+    - clone
+    - getdents
+    - getgid
+    - getuid
+    - getpid
+    - getpgrp
+    - getppid
+    - getrlimit
+    - getegid
+    - geteuid
+    - ioctl
+    - fstat
+    - mmap
+    - munmap
+    - mprotect
+    - rt_sigaction
+    - rt_sigprocmask
+    - rt_sigreturn
+    - stat
+    - statfs
+    - uname
