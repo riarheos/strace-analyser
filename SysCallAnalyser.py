@@ -15,6 +15,15 @@ def colorify(number):
         color = '\033[91m'
     return '%s%.4f\033[0m' % (color, number)
 
+def print_log(type_, read, write, total, name):
+    line = '\033[97m%10s\033[0m   ' % type_
+    line += 'rd %s  '   % colorify(read)  if read is not None  else '           '
+    line += 'wr %s  '   % colorify(write) if write is not None else '           '
+    line += 'tot %s   ' % colorify(total) if total is not None else '             '
+    if name:
+        line += name
+    print(line)
+
 class BaseStats:
     TYPE = 'undefined'
 
@@ -36,13 +45,7 @@ class BaseStats:
 
     def dump(self, close_time):
         alive_time = close_time - self.open_time
-        print '%10s   rd %s  wr %s  tot %s   %s' % (
-            self.TYPE,
-            colorify(self.read_time),
-            colorify(self.write_time),
-            colorify(alive_time),
-            self.name,
-            )
+        print_log(self.TYPE, self.read_time, self.write_time, alive_time, self.name)
 
 class FileStats(BaseStats):
     TYPE = 'file'
@@ -112,6 +115,9 @@ class SysCallAnalyser:
         if args[start] == '{':
             end_symbol = '}'
             start += 1
+        elif args[start] == '"':
+            end_symbol = '"'
+            start += 1
 
         end = args.find(end_symbol, start)
         if end > -1:
@@ -153,7 +159,7 @@ class SysCallAnalyser:
 
     def execve(self, evt):
         cmd = self._getparam(evt['params'])
-        print 'execute %s' % cmd
+        print_log('execute', None, None, None, cmd)
 
     def open(self, evt):
         file = self._getparam(evt['params'])
@@ -185,11 +191,13 @@ class SysCallAnalyser:
             stats = self.descriptors[descriptor]
             stats.add_write_time(evt['calltime'])
 
-    def nanosleep(self, evt):
-        print '     sleep                         tot %s' % colorify(evt['calltime'])
+    @staticmethod
+    def nanosleep(evt):
+        print_log('sleep', None, None, evt['calltime'], None)
 
     def sendto(self, evt):
         self.write(evt)
 
-    def wait4(self, evt):
-        print ' proc:wait                         tot %s' % colorify(evt['calltime'])
+    @staticmethod
+    def wait4(evt):
+        print_log('proc:wait', None, None, evt['calltime'], None)
