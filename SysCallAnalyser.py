@@ -1,6 +1,7 @@
 """ The SysCallAnalyser class module """
 
 import logging
+import re
 
 # pylint: disable=missing-docstring
 
@@ -8,10 +9,13 @@ class BaseStats:
     TYPE = 'undefined'
 
     def __init__(self, name, open_time):
-        self.name = name
+        self.name = self._convert_name(name)
         self.open_time = open_time
         self.read_time = 0.0
         self.write_time = 0.0
+
+    def _convert_name(self, name):
+        return name
 
     def add_read_time(self, add):
         self.read_time += add
@@ -31,10 +35,43 @@ class BaseStats:
 class FileStats(BaseStats):
     TYPE = 'file'
 
-class InNetStats(BaseStats):
+class NetStats(BaseStats):
+    rx_family = re.compile(r'sa_family=(\w+)')
+    rx_port = re.compile(r'sin6?_port=htons\((\d+)\)')
+    rx_addr_4 = re.compile(r'sin_addr=inet_addr\("([^"]+)"\)')
+    rx_addr_6 = re.compile(r'inet_pton\(AF_INET6, "([^"]+)"')
+    rx_path = re.compile(r'sun_path="([^"]+)"')
+
+    def _convert_name(self, name):
+        family = self.rx_family.search(name)
+        if not family:
+            return name
+
+        family = family.group(1)
+
+        if family == 'AF_LOCAL':
+            path = self.rx_path.search(name)
+            if path:
+                path = path.group(1)
+            return 'unix:' + str(path)
+
+        if family == 'AF_INET':
+            port = self.rx_port.search(name).group(1)
+            addr = self.rx_addr_4.search(name).group(1)
+            return '%s:%s' % (addr, port)
+
+        if family == 'AF_INET6':
+            port = self.rx_port.search(name).group(1)
+            addr = self.rx_addr_6.search(name).group(1)
+            return '[%s]:%s' % (addr, port)
+
+        return name
+
+
+class InNetStats(NetStats):
     TYPE = 'net:in'
 
-class OutNetStats(BaseStats):
+class OutNetStats(NetStats):
     TYPE = 'net:out'
 
 
@@ -89,7 +126,7 @@ class SysCallAnalyser:
     def accept(self, evt):
         file = self._getparam(evt['params'])
         sockinfo = self._getparam(evt['params'], len(file) + 1)
-        self.descriptors[evt['result']] = InNetStats('{' + sockinfo + '}', evt['ts'])
+        self.descriptors[evt['result']] = InNetStats(sockinfo, evt['ts'])
 
     def close(self, evt):
         descriptor = self._getparam(evt['params'])
@@ -101,7 +138,7 @@ class SysCallAnalyser:
     def connect(self, evt):
         descriptor = self._getparam(evt['params'])
         sockinfo = self._getparam(evt['params'], len(descriptor) + 1)
-        self.descriptors[descriptor] = OutNetStats('{' + sockinfo + '}', evt['ts'])
+        self.descriptors[descriptor] = OutNetStats(sockinfo, evt['ts'])
 
     def execve(self, evt):
         cmd = self._getparam(evt['params'])
