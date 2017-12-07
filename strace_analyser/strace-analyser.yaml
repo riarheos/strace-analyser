@@ -23,6 +23,8 @@ syscalls:
     - brk
     - chdir
     - clone
+    - epoll_ctl
+    - epoll_wait
     - fcntl
     - getdents
     - getcwd

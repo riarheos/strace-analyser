@@ -154,6 +154,9 @@ class SysCallAnalyser:
         sockinfo = self._getparam(evt['params'], len(file) + 1)
         self.descriptors[evt['result']] = InNetStats(sockinfo, evt['ts'])
 
+    def accept4(self, evt):
+        self.accept(evt)
+
     def close(self, evt):
         descriptor = self._getparam(evt['params'])
         if descriptor in self.descriptors:
