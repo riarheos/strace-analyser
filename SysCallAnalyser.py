@@ -4,7 +4,9 @@ import logging
 
 # pylint: disable=missing-docstring
 
-class FileStats:
+class BaseStats:
+    TYPE = 'undefined'
+
     def __init__(self, name, open_time):
         self.name = name
         self.open_time = open_time
@@ -19,11 +21,21 @@ class FileStats:
 
     def serialise(self, close_time):
         alive_time = close_time - self.open_time
-        return 'file access %s (read_time %.4f, write_time %.4f, alive %.4f)' % (
+        return '%s\t%s (read_time %.4f, write_time %.4f, alive %.4f)' % (
+            self.TYPE,
             self.name,
             self.read_time,
             self.write_time,
             alive_time)
+
+class FileStats(BaseStats):
+    TYPE = 'file'
+
+class InNetStats(BaseStats):
+    TYPE = 'net:in'
+
+class OutNetStats(BaseStats):
+    TYPE = 'net:out'
 
 
 class SysCallAnalyser:
@@ -42,8 +54,17 @@ class SysCallAnalyser:
             if args[start] != ' ':
                 break
             start += 1
-        end = args.find(',', start)
 
+        # quick find if there is no param
+        if start == largs:
+            return ''
+
+        end_symbol = ','
+        if args[start] == '{':
+            end_symbol = '}'
+            start += 1
+
+        end = args.find(end_symbol, start)
         if end > -1:
             return args[start:end]
         return args[start:]
@@ -65,12 +86,22 @@ class SysCallAnalyser:
             self.log.debug('Unhandled syscall %s', evt)
 
 
+    def accept(self, evt):
+        file = self._getparam(evt['params'])
+        sockinfo = self._getparam(evt['params'], len(file) + 1)
+        self.descriptors[evt['result']] = InNetStats('{' + sockinfo + '}', evt['ts'])
+
     def close(self, evt):
         descriptor = self._getparam(evt['params'])
         if descriptor in self.descriptors:
             stats = self.descriptors[descriptor]
             del self.descriptors[descriptor]
             self.log.info(stats.serialise(evt['ts']))
+
+    def connect(self, evt):
+        descriptor = self._getparam(evt['params'])
+        sockinfo = self._getparam(evt['params'], len(descriptor) + 1)
+        self.descriptors[descriptor] = OutNetStats('{' + sockinfo + '}', evt['ts'])
 
     def execve(self, evt):
         cmd = self._getparam(evt['params'])
@@ -91,6 +122,12 @@ class SysCallAnalyser:
             stats = self.descriptors[descriptor]
             stats.add_read_time(evt['calltime'])
 
+    def recvfrom(self, evt):
+        self.read(evt)
+
+    def sendmmsg(self, evt):
+        self.write(evt)
+
     def write(self, evt):
         descriptor = self._getparam(evt['params'])
         if descriptor in self.descriptors:
@@ -99,6 +136,9 @@ class SysCallAnalyser:
 
     def nanosleep(self, evt):
         self.log.info('sleep %.4f', evt['calltime'])
+
+    def sendto(self, evt):
+        self.write(evt)
 
     def wait4(self, evt):
         self.log.info('wait for process %.4f', evt['calltime'])

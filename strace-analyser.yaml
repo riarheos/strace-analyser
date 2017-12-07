@@ -13,31 +13,47 @@ logging:
           stream: ext://sys.stdout
   formatters:
       std:
-          format: "%(asctime)s %(name)10s %(levelname)8s  %(message)s"
+          format: "%(message)s"
 
 syscalls:
   ignore:
     - access
     - arch_prctl
     - brk
+    - chdir
     - clone
+    - fcntl
     - getdents
+    - getcwd
+    - getegid
+    - geteuid
     - getgid
     - getuid
     - getpid
     - getpgrp
     - getppid
     - getrlimit
-    - getegid
-    - geteuid
+    - getsockopt
+    - getsockname
+    - getpeername
     - ioctl
     - fstat
+    - lseek
+    - lstat
     - mmap
     - munmap
     - mprotect
+    - poll
     - rt_sigaction
     - rt_sigprocmask
     - rt_sigreturn
+    - select
+    - setitimer
+    - setsockopt
+    - shutdown
+    - socket
     - stat
     - statfs
+    - times
     - uname
+    - umask
