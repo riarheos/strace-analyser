@@ -2,7 +2,7 @@ logging:
   version: 1
   loggers:
       'app':
-          level: DEBUG
+          level: INFO
           handlers:
               - console
   handlers:
@@ -19,6 +19,7 @@ syscalls:
   ignore:
     - access
     - arch_prctl
+    - bind
     - brk
     - chdir
     - clone
@@ -40,6 +41,7 @@ syscalls:
     - fstat
     - lseek
     - lstat
+    - madvise
     - mmap
     - munmap
     - mprotect
@@ -50,6 +52,7 @@ syscalls:
     - select
     - setitimer
     - setsockopt
+    - set_robust_list
     - shutdown
     - socket
     - stat

@@ -5,6 +5,16 @@ import re
 
 # pylint: disable=missing-docstring
 
+def colorify(number):
+    color = '\033[92m'
+    if number < 0.0001:
+        color = '\033[90m'
+    if number > 0.1:
+        color = '\033[93m'
+    if number > 0.5:
+        color = '\033[91m'
+    return '%s%.4f\033[0m' % (color, number)
+
 class BaseStats:
     TYPE = 'undefined'
 
@@ -14,7 +24,8 @@ class BaseStats:
         self.read_time = 0.0
         self.write_time = 0.0
 
-    def _convert_name(self, name):
+    @staticmethod
+    def _convert_name(name):
         return name
 
     def add_read_time(self, add):
@@ -23,14 +34,15 @@ class BaseStats:
     def add_write_time(self, add):
         self.write_time += add
 
-    def serialise(self, close_time):
+    def dump(self, close_time):
         alive_time = close_time - self.open_time
-        return '%s\t%s (read_time %.4f, write_time %.4f, alive %.4f)' % (
+        print '%10s   rd %s  wr %s  tot %s   %s' % (
             self.TYPE,
+            colorify(self.read_time),
+            colorify(self.write_time),
+            colorify(alive_time),
             self.name,
-            self.read_time,
-            self.write_time,
-            alive_time)
+            )
 
 class FileStats(BaseStats):
     TYPE = 'file'
@@ -69,10 +81,10 @@ class NetStats(BaseStats):
 
 
 class InNetStats(NetStats):
-    TYPE = 'net:in'
+    TYPE = 'net in'
 
 class OutNetStats(NetStats):
-    TYPE = 'net:out'
+    TYPE = 'net out'
 
 
 class SysCallAnalyser:
@@ -131,9 +143,8 @@ class SysCallAnalyser:
     def close(self, evt):
         descriptor = self._getparam(evt['params'])
         if descriptor in self.descriptors:
-            stats = self.descriptors[descriptor]
+            self.descriptors[descriptor].dump(evt['ts'])
             del self.descriptors[descriptor]
-            self.log.info(stats.serialise(evt['ts']))
 
     def connect(self, evt):
         descriptor = self._getparam(evt['params'])
@@ -142,7 +153,7 @@ class SysCallAnalyser:
 
     def execve(self, evt):
         cmd = self._getparam(evt['params'])
-        self.log.info('execute %s', cmd)
+        print 'execute %s' % cmd
 
     def open(self, evt):
         file = self._getparam(evt['params'])
@@ -162,6 +173,9 @@ class SysCallAnalyser:
     def recvfrom(self, evt):
         self.read(evt)
 
+    def recvmsg(self, evt):
+        self.read(evt)
+
     def sendmmsg(self, evt):
         self.write(evt)
 
@@ -172,10 +186,10 @@ class SysCallAnalyser:
             stats.add_write_time(evt['calltime'])
 
     def nanosleep(self, evt):
-        self.log.info('sleep %.4f', evt['calltime'])
+        print '     sleep                         tot %s' % colorify(evt['calltime'])
 
     def sendto(self, evt):
         self.write(evt)
 
     def wait4(self, evt):
-        self.log.info('wait for process %.4f', evt['calltime'])
+        print ' proc:wait                         tot %s' % colorify(evt['calltime'])
