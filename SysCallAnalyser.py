@@ -5,7 +5,9 @@ import re
 
 # pylint: disable=missing-docstring
 
+
 def colorify(number):
+    """ Adds colours based on the number value """
     color = '\033[92m'
     if number < 0.0001:
         color = '\033[90m'
@@ -15,7 +17,9 @@ def colorify(number):
         color = '\033[91m'
     return '%s%.4f\033[0m' % (color, number)
 
+
 def print_log(type_, read, write, total, name):
+    """ Formats an output line with colours """
     line = '\033[97m%10s\033[0m   ' % type_
     line += 'rd %s  '   % colorify(read)  if read is not None  else '           '
     line += 'wr %s  '   % colorify(write) if write is not None else '           '
@@ -24,7 +28,10 @@ def print_log(type_, read, write, total, name):
         line += name
     print(line)
 
+
 class BaseStats:
+    """ The base stats class. Holds several statistics and
+        posesses the ability to dump itself """
     TYPE = 'undefined'
 
     def __init__(self, name, open_time):
@@ -51,6 +58,7 @@ class FileStats(BaseStats):
     TYPE = 'file'
 
 class NetStats(BaseStats):
+    """ Allows long ip/port conversions to a human-readable format """
     rx_family = re.compile(r'sa_family=(\w+)')
     rx_port = re.compile(r'sin6?_port=htons\((\d+)\)')
     rx_addr_4 = re.compile(r'sin_addr=inet_addr\("([^"]+)"\)')
