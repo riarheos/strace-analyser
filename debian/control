@@ -1,15 +1,13 @@
 Source: strace-analyser
-Section: unknown
+Section: misc
 Priority: optional
 Maintainer: Pavel Pushkarev <paulus@yandex-team.ru>
 Build-Depends: debhelper (>= 8.0.0)
 Standards-Version: 3.9.4
-Homepage: <insert the upstream URL, if relevant>
-#Vcs-Git: git://git.debian.org/collab-maint/strace-analyser.git
-#Vcs-Browser: http://git.debian.org/?p=collab-maint/strace-analyser.git;a=summary
+Homepage: https://github.yandex-team.ru/admins/strace-analyser
 
 Package: strace-analyser
-Architecture: any
+Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Description: The strace analisation script
+ Analyses the strace output. A debugging/profiling helper.
