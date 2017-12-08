@@ -187,6 +187,9 @@ class SysCallAnalyser:
             stats = self.descriptors[descriptor]
             stats.add_read_time(evt['calltime'])
 
+    def readv(self, evt):
+        self.read(evt)
+
     def recvfrom(self, evt):
         self.read(evt)
 
@@ -201,6 +204,9 @@ class SysCallAnalyser:
         if descriptor in self.descriptors:
             stats = self.descriptors[descriptor]
             stats.add_write_time(evt['calltime'])
+
+    def writev(self, evt):
+        return self.write(evt)
 
     @staticmethod
     def nanosleep(evt):

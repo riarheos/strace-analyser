@@ -26,6 +26,7 @@ syscalls:
     - epoll_ctl
     - epoll_wait
     - fcntl
+    - futex
     - getdents
     - getcwd
     - getegid
@@ -36,6 +37,7 @@ syscalls:
     - getpgrp
     - getppid
     - getrlimit
+    - getrusage
     - getsockopt
     - getsockname
     - getpeername
