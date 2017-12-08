@@ -2,7 +2,7 @@ logging:
   version: 1
   loggers:
       'app':
-          level: INFO
+          level: DEBUG
           handlers:
               - console
   handlers:

@@ -1,9 +1,13 @@
 """ The SysCallAnalyser class module """
 
+import socket
 import logging
 import re
 
 # pylint: disable=missing-docstring
+
+
+DNS_CACHE = {}
 
 
 def colorify(number):
@@ -81,12 +85,29 @@ class NetStats(BaseStats):
         if family == 'AF_INET':
             port = self.rx_port.search(name).group(1)
             addr = self.rx_addr_4.search(name).group(1)
+            if addr in DNS_CACHE:
+                addr = DNS_CACHE[addr]
+            else:
+                try:
+                    resolve = socket.gethostbyaddr(addr)
+                    DNS_CACHE[addr] = resolve[0]
+                except socket.herror:
+                    DNS_CACHE[addr] = addr
             return '%s:%s' % (addr, port)
 
         if family == 'AF_INET6':
             port = self.rx_port.search(name).group(1)
             addr = self.rx_addr_6.search(name).group(1)
-            return '[%s]:%s' % (addr, port)
+            if addr in DNS_CACHE:
+                addr = DNS_CACHE[addr]
+            else:
+                try:
+                    resolve = socket.gethostbyaddr(addr)
+                    DNS_CACHE[addr] = resolve[0]
+                except socket.herror:
+                    addr = '[' + addr + ']'
+                    DNS_CACHE[addr] = addr
+            return '%s:%s' % (addr, port)
 
         return name
 
