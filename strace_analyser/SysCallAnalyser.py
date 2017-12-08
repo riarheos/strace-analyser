@@ -168,6 +168,11 @@ class SysCallAnalyser:
         sockinfo = self._getparam(evt['params'], len(descriptor) + 1)
         self.descriptors[descriptor] = OutNetStats(sockinfo, evt['ts'])
 
+    def dup(self, evt):
+        descriptor = self._getparam(evt['params'])
+        if descriptor in self.descriptors:
+            self.descriptors[evt['result']] = self.descriptors[descriptor]
+
     def execve(self, evt):
         cmd = self._getparam(evt['params'])
         print_log('execute', None, None, None, cmd)
@@ -180,6 +185,9 @@ class SysCallAnalyser:
         location = self._getparam(evt['params'])
         file = self._getparam(evt['params'], len(location) + 1)
         self.descriptors[evt['result']] = FileStats(file, evt['ts'])
+
+    def pread(self, evt):
+        self.read(evt)
 
     def read(self, evt):
         descriptor = self._getparam(evt['params'])
@@ -198,6 +206,9 @@ class SysCallAnalyser:
 
     def sendmmsg(self, evt):
         self.write(evt)
+
+    def pwrite(self, evt):
+        return self.write(evt)
 
     def write(self, evt):
         descriptor = self._getparam(evt['params'])
