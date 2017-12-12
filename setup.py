@@ -11,7 +11,7 @@ setup(
     url                 = "https://github.com/riarheos/strace-analyser",
     packages            = find_packages(),
     scripts             = ['strace-analyser'],
-    install_requires    = ['python-yaml'],
+    install_requires    = ['PyYAML'],
     package_data = {
         '': ['*.yaml'],
     }
