@@ -4,8 +4,7 @@ It can track file/network requests and write down timings.
 
 Linux-only due to strace :)
 
-![Strace Analyser Preview]
-(https://github.com/riarheos/strace-analyser/raw/master/strace_image.png)
+![Strace Analyser Preview](https://github.com/riarheos/strace-analyser/raw/master/strace_image.png)
 
 ## Installation
 
