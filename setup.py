@@ -11,7 +11,7 @@ setup(
     url                 = "https://github.yandex-team.ru/admins/strace-analyser",
     packages            = find_packages(),
     scripts             = ['strace-analyser'],
-    install_requires    = ['yaconfig'],
+    install_requires    = ['yaml'],
     package_data = {
         '': ['*.yaml'],
     }

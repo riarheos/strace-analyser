@@ -9,8 +9,9 @@ strace -f -ttt -v -qq -T -s 1024 -p <pid> 2>&1 | strace-analyser
 """
 
 import fileinput
+import logging.config
 import pkg_resources
-import yaconfig
+import yaml
 from strace_analyser import StraceProcessor, SysCallAnalyser
 
 
@@ -18,10 +19,11 @@ def main():
     """ The main entry point """
     conf_file = pkg_resources.resource_filename('strace_analyser',
                                                 'strace-analyser.yaml')
-    conf = yaconfig.load_config(conf_file)
+    conf = yaml.load(open(conf_file))
+    logging.config.dictConfig(conf['logging'])
 
     processor = StraceProcessor()
-    analyser = SysCallAnalyser(conf.syscalls.ignore)
+    analyser = SysCallAnalyser(conf['syscalls']['ignore'])
     for line in fileinput.input():
         evt = processor.process(line)
         analyser.process(evt)
