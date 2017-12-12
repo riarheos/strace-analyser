@@ -5,13 +5,13 @@ setup(
     name                = "strace-analyser",
     version             = "1",
     author              = "Pavel Pushkarev",
-    author_email        = "media-admin@yandex-team.ru",
+    author_email        = "paulmd@ya.ru",
     description         = ("The simple strace analisation routine"),
     license             = "GPL",
-    url                 = "https://github.yandex-team.ru/admins/strace-analyser",
+    url                 = "https://github.com/riarheos/strace-analyser",
     packages            = find_packages(),
     scripts             = ['strace-analyser'],
-    install_requires    = ['yaml'],
+    install_requires    = ['python-yaml'],
     package_data = {
         '': ['*.yaml'],
     }
